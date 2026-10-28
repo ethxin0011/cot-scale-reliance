@@ -111,31 +111,8 @@ cot_scaling/
 │   │   ├── fig*.png
 │   │   └── paper_numbers.md          # every number quoted in the paper
 │   ├── paper_kit.zip                 # zipped copy of data/paper/
-│   └── score_main_final.log          # final scoring log
-│
-└── paper/                            # arXiv LaTeX source
-    ├── main.tex
-    ├── tables.tex                    # Tables 1–4
-    ├── tables_appendix.tex           # Tables 5–6
-    ├── references.bib
-    ├── main.bbl
-    ├── acl.sty                       # local substitute; replace with official ACL style
-    ├── main.pdf
-    ├── figures/
-    │   ├── fig1_accuracy_by_k.pdf
-    │   ├── fig2_reliance_vs_size.pdf
-    │   ├── fig3_reliance_vs_capability.pdf
-    │   ├── fig4_base_vs_post.pdf
-    │   ├── fig5_olmo_tokens.pdf
-    │   └── table1..table6_*.pdf      # standalone render of every table
-    └── anc/                          # scripts that rebuild paper figures/tables from paper_numbers.md
-        ├── data.py
-        ├── figs.py
-        ├── tables.py
-        └── step7_paper.py
+│   └── score_main_final.log          # final scoring log 
 ```
-
-> Update the `step2_*.py` entry to your exact staging script filename before publishing.
 
 ---
 

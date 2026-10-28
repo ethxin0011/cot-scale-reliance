@@ -1,0 +1,31 @@
+{
+ "tag": "pilot",
+ "max_attempts": 40,
+ "models": [
+  {
+   "key": "gemma3-1b",
+   "quant": "none",
+   "dtype": "float32"
+  },
+  {
+   "key": "llama3.2-1b",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-1b-main",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-1.7b",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-1.7b-base",
+   "quant": "none",
+   "dtype": "float16"
+  }
+ ]
+}

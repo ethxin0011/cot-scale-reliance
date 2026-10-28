@@ -1,0 +1,17 @@
+name: cot-scaling-gpu
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu121
+      - torch==2.5.1
+      - transformers>=4.51.3,<5
+      - accelerate>=1.2
+      - bitsandbytes>=0.45.0
+      - safetensors
+      - sentencepiece
+      - protobuf
+      - pandas
+      - pyarrow

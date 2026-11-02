@@ -1,0 +1,161 @@
+{
+ "tag": "main",
+ "max_attempts": 80,
+ "models": [
+  {
+   "key": "qwen3-14b",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-14b-base",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-4b",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-4b-base",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-8b-base",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-4b-nf4",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-1.7b",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-1.7b-base",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-0.6b",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "qwen3-0.6b-base",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "gemma3-1b",
+   "quant": "none",
+   "dtype": "float32"
+  },
+  {
+   "key": "llama3.2-1b",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-1b-1972B",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-1b-2978B",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-1b-336B",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-1b-944B",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-1b-main",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "gemma3-4b",
+   "quant": "nf4",
+   "dtype": "float32"
+  },
+  {
+   "key": "llama3.2-3b",
+   "quant": "none",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-7b-1934B",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-7b-2924B",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-7b-main",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "llama3.1-8b",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "gemma3-12b",
+   "quant": "nf4",
+   "dtype": "float32"
+  },
+  {
+   "key": "olmo2-13b-3675B",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-13b-main",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-7b-365B",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-7b-957B",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-13b-1087B",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-13b-2391B",
+   "quant": "nf4",
+   "dtype": "float16"
+  },
+  {
+   "key": "olmo2-13b-521B",
+   "quant": "nf4",
+   "dtype": "float16"
+  }
+ ]
+}

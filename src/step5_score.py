@@ -1,21 +1,20 @@
-"""STEP 5 (CPU): download generations, check coverage, parse, classify, GPT fallback + audit.
+"""STEP 5 (CPU): download generations, check coverage, parse, and classify.
 
 Usage:
   python step5_score.py --tag pilot --gate          # pilot go/no-go report
-  python step5_score.py --tag main [--no_gpt]
-Outputs: data/<tag>/scored/<key>.parquet, data/<tag>/coverage.csv, data/<tag>/parser_audit.csv
+  python step5_score.py --tag main
+Outputs: data/<tag>/scored/<key>.parquet, data/<tag>/coverage.csv
 """
 import argparse
 import glob
 import json
-import random
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import pandas as pd
 
-from config import (AUDIT_SAMPLE_PER_MODEL, DATA_ROOT, GATE_MIN_EDIT_ELIGIBLE,
-                    GATE_MIN_FORMAT_COMPLIANCE, PILOT_MODELS, SEED, blob_results, data_dir)
+from config import (DATA_ROOT, GATE_MIN_EDIT_ELIGIBLE,
+                    GATE_MIN_FORMAT_COMPLIANCE, PILOT_MODELS, blob_results, data_dir)
 from s5_task import classify_edit, first_post_edit_path, parse_output
 
 
@@ -48,7 +47,7 @@ def score_frame(gen, items, probs):
         states = json.loads(pr.states)
         row = dict(item_id=r.item_id, pid=r.pid, k=r.k, m=r.m, cond=r.cond,
                    has_output=isinstance(r.text, str), n_gen=r.n_gen, answer=ps["answer"],
-                   step_k=ps["steps"].get(r.k), n_steps=ps["n_steps"], llm_parsed=False, text=text)
+                   step_k=ps["steps"].get(r.k), n_steps=ps["n_steps"], text=text)
         if r.cond == "cot":
             row["prefix_ok"] = all(ps["steps"].get(t) == states[t - 1] for t in range(1, r.m + 1))
         rows.append(row)
@@ -75,40 +74,21 @@ def finalize(df, probs):
     return df
 
 
-def score_model(tag, key, use_gpt):
+def score_model(tag, key):
     items = pd.read_parquet(data_dir(tag) / "items.parquet")
     probs = pd.read_parquet(data_dir(tag) / "problems.parquet")
     gen = fetch(tag, key)
     if gen.empty:
-        return key, None, dict(model=key, n_expected=len(items), n_got=0, coverage=0.0)
+        return key, dict(model=key, n_expected=len(items), n_got=0, coverage=0.0)
     cov = dict(model=key, n_expected=len(items), n_got=int(gen.item_id.isin(items.item_id).sum()),
                n_err=int(gen.is_err.sum()))
     cov["coverage"] = cov["n_got"] / cov["n_expected"]
     df = score_frame(gen, items, probs)
     cov["regex_compliance_cot"] = float(df[df.cond == "cot"].answer.notna().mean())
-    audit = None
-    if use_gpt:
-        import llm_assist
-        miss = df[df.answer.isna() & (df.text.str.len() > 0)]
-        if len(miss):
-            res = llm_assist.extract_many(list(miss.text), list(miss.k))
-            for idx, r in zip(miss.index, res):
-                if r.get("final_answer"):
-                    df.at[idx, "answer"] = r["final_answer"]; df.at[idx, "llm_parsed"] = True
-                if r.get("step_k") and not df.at[idx, "step_k"]:
-                    df.at[idx, "step_k"] = r["step_k"]
-        ok = df[df.answer.notna() & ~df.llm_parsed]
-        smp = ok.sample(min(AUDIT_SAMPLE_PER_MODEL, len(ok)), random_state=SEED)
-        res = llm_assist.extract_many(list(smp.text), list(smp.k))
-        audit = pd.DataFrame(dict(model=key, item_id=smp.item_id.values,
-                                  regex=smp.answer.values,
-                                  gpt=[r.get("final_answer") for r in res]))
-        audit["agree"] = audit.regex == audit.gpt
-        cov["audit_agree"] = float(audit.agree.mean())
     df = finalize(df, probs)
     out = data_dir(tag) / "scored"; out.mkdir(exist_ok=True)
     df.drop(columns=["text"]).to_parquet(out / f"{key}.parquet", index=False)
-    return key, audit, cov
+    return key, cov
 
 
 def gate_report(tag, keys):
@@ -135,25 +115,20 @@ def gate_report(tag, keys):
           "CHECK - inspect failing models (prompt format / dtype) before main run")
 
 
-def main(tag, which, use_gpt, gate, workers):
+def main(tag, which, gate, workers):
     manifest = json.loads((DATA_ROOT / "manifest.json").read_text())
     keys = list(manifest)
     if which == "pilot" or (which == "all" and tag == "pilot"):
         keys = [k for k in keys if k in PILOT_MODELS]
     elif which != "all":
         keys = which.split(",")
-    covs, audits = [], []
+    covs = []
     with ProcessPoolExecutor(workers) as ex:
-        for key, audit, cov in ex.map(score_model, [tag] * len(keys), keys, [use_gpt] * len(keys)):
+        for key, cov in ex.map(score_model, [tag] * len(keys), keys):
             covs.append(cov)
-            if audit is not None:
-                audits.append(audit)
             print(f"[scored] {key}: coverage={cov['coverage']:.3f} "
-                  f"compliance={cov.get('regex_compliance_cot', float('nan')):.3f} "
-                  f"audit={cov.get('audit_agree', float('nan')):.3f}")
+                  f"compliance={cov.get('regex_compliance_cot', float('nan')):.3f}")
     pd.DataFrame(covs).to_csv(data_dir(tag) / "coverage.csv", index=False)
-    if audits:
-        pd.concat(audits).to_csv(data_dir(tag) / "parser_audit.csv", index=False)
     if gate:
         gate_report(tag, keys)
 
@@ -162,8 +137,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", default="main", choices=["pilot", "main"])
     ap.add_argument("--models", default="all")
-    ap.add_argument("--no_gpt", action="store_true")
+    ap.add_argument("--no_gpt", action="store_true", help="retained for CLI compatibility (scoring is regex-only)")
     ap.add_argument("--gate", action="store_true")
     ap.add_argument("--workers", type=int, default=8)
     a = ap.parse_args()
-    main(a.tag, a.models, not a.no_gpt, a.gate, a.workers)
+    main(a.tag, a.models, a.gate, a.workers)

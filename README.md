@@ -88,7 +88,6 @@ cot_scaling/
 │   │                                 #   backup job of itself, survives preemption
 │   ├── run_main.json                 # model list and order for the runner
 │   ├── step5_score.py                # parse + score all outputs; --gate prints per-model summary
-│   ├── llm_assist.py                 # optional GPT-assisted parse audit (not used for final numbers)
 │   ├── diag_v3.py                    # step-level diagnostics and raw samples
 │   └── step7_paper.py                # final tables, bootstrap CIs, scaling fits, figures, paper_kit.zip
 │
@@ -125,7 +124,6 @@ cot_scaling/
   - a GPU cluster with 1 × T4 16 GB (max nodes 1, min 0)
 - Python 3.10, `torch`, `transformers`, `bitsandbytes`, `accelerate`, `azure-ai-ml`, `azure-identity`, `pandas`, `pyarrow`, `numpy`, `scipy`, `matplotlib`
 - A Hugging Face token with access to the Gemma 3 and Llama 3 licences (used only for staging)
-- Optional: `AZURE_OPENAI_API_KEY` for the GPT parse audit (`step5_score.py` without `--no_gpt`)
 
 > ⚠️ Never commit API keys or tokens. Set them with `getpass` or environment variables.
 
@@ -144,7 +142,7 @@ Run from `src/` on the CPU instance unless noted.
 python rebuild_pilot_v3.py --tag main
 
 # 2. Stage model weights to blob storage and write data/manifest.json
-python step2_<stage_script>.py --models all
+python step2_download_models.py --models all
 
 # 3. Render tokenized prompts for every model
 python step3_render_prompts.py --tag main --models all
@@ -174,7 +172,7 @@ To change the model order or skip models, edit `run_main.json`, cancel the activ
 ### 5. Score
 
 ```bash
-python step5_score.py --tag main --gate --no_gpt
+python step5_score.py --tag main --gate
 ```
 
 ### 6. Build paper tables and figures
